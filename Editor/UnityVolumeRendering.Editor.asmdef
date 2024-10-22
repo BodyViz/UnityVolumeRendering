@@ -1,0 +1,11 @@
+{
+    "name": "UnityVolumeRendering.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:559711da67c94a14ea8e1c4952c5c0b2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
+
+}
