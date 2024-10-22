@@ -1,5 +1,5 @@
 {
-  "name": "com.bodyvize.unityvolumerenderingpackage",
+  "name": "com.bodyviz.unityvolumerenderingpackage",
   "version": "1.0.0",
   "displayName": "BodyViz fork of Unity Volume Rendering - Package",
   "description": "BodyViz fork of Unity Volume Rendering plugin structured into package suitable for pulling directly from GitHub",
