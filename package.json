@@ -1,7 +1,7 @@
 {
   "name": "com.bodyviz.unityvolumerenderingpackage",
   "version": "1.0.0",
-  "displayName": "BodyViz fork of Unity Volume Rendering - Package",
+  "displayName": "BodyVizUnityVolumeRendering",
   "description": "BodyViz fork of Unity Volume Rendering plugin structured into package suitable for pulling directly from GitHub",
   "unity": "2022.3",
   "author": {
