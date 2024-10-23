@@ -1,0 +1,17 @@
+{
+    "name": "UnityVolumeRendering",
+    "rootNamespace": "",
+    "references": [
+        "GUID:41614b6cabcc1574ca2ee624e9d0b436",
+        "GUID:76a6e3237d4fe734582bc1c9551f0bfe"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
