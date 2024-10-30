@@ -1,12 +1,8 @@
 {
-    "name": "UnityVolumeRendering.Editor",
+    "name": "UnityVolumeRendering",
     "rootNamespace": "",
-    "references": [
-        "UnityVolumeRendering"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
