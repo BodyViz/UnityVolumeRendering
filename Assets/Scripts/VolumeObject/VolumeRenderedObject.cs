@@ -55,7 +55,7 @@ namespace UnityVolumeRendering
 
         // Minimum and maximum gradient threshold for lighting contribution. Values below min will be unlit, and between min and max will be partly shaded.
         [SerializeField, HideInInspector]
-        private Vector2 gradientLightingThreshold = new Vector2(0.02f, 0.15f);
+        private Vector2 gradientLightingThreshold = new Vector2(0.005f, 0.02f);
 
         // Gradient magnitude threshold. Voxels with gradient magnitude less than this will not be rendered in isosurface rendering mode.
         [SerializeField, HideInInspector]
@@ -76,6 +76,9 @@ namespace UnityVolumeRendering
         // Sampling rate multiplier, which affects how many samples are calculated for each ray. Lower values yield better peformance at the cost of visual quality.
         [SerializeField, HideInInspector]
         private float samplingRateMultiplier = 1.0f;
+
+        [SerializeField, HideInInspector]
+        private GradientType gradientType = GradientType.CentralDifference;
 
         private CrossSectionManager crossSectionManager;
 
@@ -373,6 +376,29 @@ namespace UnityVolumeRendering
             }
         }
 
+        public GradientType GetGradientType()
+        {
+            return this.gradientType;
+        }
+
+        public void SetGradientType(GradientType gradientType)
+        {
+             _ = SetGradientTypeAsync(gradientType);
+        }
+
+        public async Task SetGradientTypeAsync(GradientType gradientType, IProgressHandler progressHandler = null)
+        {
+            if (gradientType != this.gradientType)
+            {
+                this.gradientType = gradientType;
+                if (NeedsGradients())
+                {
+                    await dataset.RegenerateGradientTextureAsync(gradientType, progressHandler);
+                    await UpdateMaterialPropertiesAsync();
+                }
+            }
+        }
+
         public void SetGradientLightingThreshold(Vector2 threshold)
         {
             if (gradientLightingThreshold != threshold)
@@ -507,7 +533,7 @@ namespace UnityVolumeRendering
 
             try
             {
-                bool useGradientTexture = tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering || lightingEnabled;
+                bool useGradientTexture = NeedsGradients();
                 Texture3D dataTexture = await dataset.GetDataTextureAsync(progressHandler);
                 Texture3D gradientTexture = useGradientTexture ? await dataset.GetGradientTextureAsync(progressHandler) : null;
                 Texture3D secondaryDataTexture = secondaryDataset ? await secondaryDataset?.GetDataTextureAsync(progressHandler) : null;
@@ -654,6 +680,11 @@ namespace UnityVolumeRendering
                 if (trans)
                     volumeContainerObject = trans.gameObject;
             }
+        }
+
+        private bool NeedsGradients()
+        {
+            return lightingEnabled || tfRenderMode == TFRenderMode.TF2D || renderMode == RenderMode.IsosurfaceRendering;
         }
     }
 }

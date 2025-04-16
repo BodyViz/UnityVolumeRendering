@@ -47,7 +47,7 @@
             #include "UnityCG.cginc"
             #include "Include/TricubicSampling.cginc"
 
-            #define AMBIENT_LIGHTING_FACTOR 0.5
+            #define AMBIENT_LIGHTING_FACTOR 0.2
             #define JITTER_FACTOR 5.0
 
             struct vert_in
@@ -159,7 +159,15 @@
                 // Check if camera is inside AABB
                 const float3 farPos = ray.startPos + ray.direction * ray.aabbInters.y - float3(0.5f, 0.5f, 0.5f);
                 float4 clipPos = UnityObjectToClipPos(float4(farPos, 1.0f));
-                ray.aabbInters += min(clipPos.w, 0.0);
+                if(unity_OrthoParams.w == 0)
+                {
+                    float3 viewDir = ObjSpaceViewDir(float4(vertexLocal, 0.0f));
+                    float viewDist = length(viewDir);
+                    if (ray.aabbInters.y > viewDist)
+                    {
+                        ray.aabbInters.y = viewDist;
+                    }
+                }
 
                 ray.endPos = ray.startPos + ray.direction * ray.aabbInters.y;
                 return ray;
@@ -252,13 +260,15 @@
                 // Optimised version of: if(dot(normal, eyeDir) < 0.0) normal *= -1.0
                 normal *= (step(0.0, dot(normal, eyeDir)) * 2.0 - 1.0);
 
-                float ndotl = max(lerp(0.0f, 1.5f, dot(normal, lightDir)), AMBIENT_LIGHTING_FACTOR);
+                float ndotl = max(dot(normal, lightDir), 0.0f);
                 float3 diffuse = ndotl * col;
+                float3 ambient = AMBIENT_LIGHTING_FACTOR * col;
                 float3 v = eyeDir;
                 float3 r = normalize(reflect(-lightDir, normal));
                 float rdotv = max( dot( r, v ), 0.0 );
                 float3 specular = pow(rdotv, 32.0f) * float3(1.0f, 1.0f, 1.0f) * specularIntensity;
-                return diffuse + specular;
+                float3 result = diffuse + ambient + specular;
+                return float3(min(result.r, 1.0f), min(result.g, 1.0f), min(result.b, 1.0f));
             }
 
             float calculateShadow(float3 pos, float3 lightDir)
@@ -322,7 +332,7 @@
                     	continue;
 #endif
 
-#if CUBIC_INTERPOLATION_ON
+#if CUBIC_INTERPOLATION_ON && !defined(MULTIVOLUME_OVERLAY) && !defined(MULTIVOLUME_ISOLATE)
                     // Optimisation: First get density without tricubic interpolation, before doing an early return
                     if (getTF1DColour(getDensityNoTricubic(currPos)).a == 0.0)
                         continue;
@@ -337,8 +347,10 @@
                     // Apply 1D transfer function
 #if !TF2D_ON
                     float4 src = getTF1DColour(density);
+#if !defined(MULTIVOLUME_OVERLAY) && !defined(MULTIVOLUME_ISOLATE)
                     if (src.a == 0.0)
                         continue;
+#endif
 
 #if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
                     const float secondaryDensity = getSecondaryDensity(currPos);
@@ -355,6 +367,7 @@
 #if defined(TF2D_ON) || defined(LIGHTING_ON)
                     float3 gradient = getGradient(currPos);
                     float gradMag = length(gradient);
+
                     float gradMagNorm = gradMag / 1.75f;
 #endif
 
