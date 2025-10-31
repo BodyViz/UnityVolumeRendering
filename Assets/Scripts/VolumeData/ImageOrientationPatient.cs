@@ -30,6 +30,11 @@ public class ImageOrientationPatient
         return _column;
     }
 
+    public Vector3 Normal()
+    {
+        return Vector3.Cross(_row, _column).normalized;
+    }
+
     public void printInfo()
     {
         Debug.Log("ImageOrientationPatient");

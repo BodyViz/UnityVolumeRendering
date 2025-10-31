@@ -407,9 +407,7 @@ namespace UnityVolumeRendering
                 return;
 
             // Construct the basis vectors
-            Vector3 xBase = slices[0].imageOrientation.Row();
-            Vector3 yBase = slices[0].imageOrientation.Column();
-            Vector3 normal = Vector3.Cross(xBase, yBase);
+            Vector3 normal = slices[0].imageOrientation.Normal();
 
             for (int i = 0; i < slices.Count; i++)
             {
