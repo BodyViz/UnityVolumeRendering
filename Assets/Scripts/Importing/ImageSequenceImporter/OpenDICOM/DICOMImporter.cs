@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 using openDicom.Registry;
@@ -76,7 +76,7 @@ namespace UnityVolumeRendering
 
             LoadSeriesFromResourcesInternal(dataElementDictionary, uidDictionary);
 
-            await Task.Run(()=> LoadSeriesInternal(fileCandidates, seriesByUID, settings.progressHandler));
+            await Task.Run(() => LoadSeriesInternal(fileCandidates, seriesByUID, settings.progressHandler));
 
             Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
 
@@ -167,11 +167,11 @@ namespace UnityVolumeRendering
             VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             bool clampHounsfield = PlayerPrefs.GetInt("ClampHounsfield") > 0;
-            await Task.Run(() => ImportSeriesInternal(files,dataset, settings.progressHandler, clampHounsfield));
+            await Task.Run(() => ImportSeriesInternal(files, dataset, settings.progressHandler, clampHounsfield));
 
             return dataset;
         }
-        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset, IProgressHandler progress, bool clampHounsfield)
+        private void ImportSeriesInternal(List<DICOMSliceFile> files, VolumeDataset dataset, IProgressHandler progress, bool clampHounsfield)
         {
             // Calculate slice location from "Image Position" (0020,0032)
             CalculateSliceLocations(files);
@@ -229,7 +229,7 @@ namespace UnityVolumeRendering
             }
 
             dataset.FixDimensions();
-            
+
             // Convert from LPS to Unity's coordinate system
             ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(dataset);
         }
@@ -283,7 +283,7 @@ namespace UnityVolumeRendering
                     var firstColumn = new Vector3((float)Convert.ToDouble(elemImageOrientation.Value[3]), (float)Convert.ToDouble(elemImageOrientation.Value[4]), (float)Convert.ToDouble(elemImageOrientation.Value[5]));
                     slice.imageOrientation = new ImageOrientationPatient(firstRow, firstColumn);
                 }
-                
+
                 // Read intercept
                 if (file.DataSet.Contains(interceptTag))
                 {
@@ -292,7 +292,7 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-                
+
                 // Read slope
                 if (file.DataSet.Contains(slopeTag))
                 {
@@ -301,7 +301,7 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-                
+
                 // Read pixel spacing
                 if (file.DataSet.Contains(pixelSpacingTag))
                 {
@@ -367,7 +367,7 @@ namespace UnityVolumeRendering
 
                     // Byte array for a single cell/pixel value
                     byte[] cellData = new byte[cellSize];
-                    for(int iByte = 0; iByte < bytes.Length; iByte++)
+                    for (int iByte = 0; iByte < bytes.Length; iByte++)
                     {
                         // Collect bytes for one cell (sample)
                         int index = iByte % cellSize;

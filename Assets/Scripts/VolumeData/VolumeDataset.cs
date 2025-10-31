@@ -14,7 +14,7 @@ namespace UnityVolumeRendering
     public class VolumeDataset : ScriptableObject, ISerializationCallbackReceiver
     {
         public string filePath;
-        
+
         // Flattened 3D array of data sample values.
         [SerializeField]
         public float[] data;
@@ -27,7 +27,7 @@ namespace UnityVolumeRendering
 
         [SerializeField]
         public Quaternion rotation;
-        
+
         public float volumeScale;
 
         [SerializeField]
@@ -192,7 +192,7 @@ namespace UnityVolumeRendering
 
             while (Mathf.Max(dimX, dimY, dimZ) > MAX_DIM)
             {
-                Debug.LogWarning("Dimension exceeds limits (maximum: "+MAX_DIM+"). Dataset is downscaled by 2 on each axis!");
+                Debug.LogWarning("Dimension exceeds limits (maximum: " + MAX_DIM + "). Dataset is downscaled by 2 on each axis!");
 
                 DownScaleData();
             }
@@ -249,7 +249,7 @@ namespace UnityVolumeRendering
             }
         }
 
-        private async Task<Texture3D> CreateTextureInternalAsync(IProgressHandler progressHandler)                                        
+        private async Task<Texture3D> CreateTextureInternalAsync(IProgressHandler progressHandler)
         {
             Debug.Log("Async texture generation. Hold on.");
 
@@ -283,7 +283,8 @@ namespace UnityVolumeRendering
                     progressHandler.StartStage(0.8f, "Allocating pixel data");
                     NativeArray<ushort> pixelBytes = new NativeArray<ushort>(data.Length, Allocator.Persistent);
 
-                    await Task.Run(() => {
+                    await Task.Run(() =>
+                    {
                         for (int i = 0; i < dimension;)
                         {
                             progressHandler.ReportProgress(i, dimension, "Copying slice data.");
@@ -308,7 +309,8 @@ namespace UnityVolumeRendering
                     progressHandler.StartStage(0.8f, "Allocating pixel data");
                     NativeArray<float> pixelBytes = new NativeArray<float>(data.Length, Allocator.Persistent);
 
-                    await Task.Run(() => {
+                    await Task.Run(() =>
+                    {
                         for (int i = 0; i < dimension;)
                         {
                             progressHandler.ReportProgress(i, dimension, "Copying slice data.");
@@ -330,7 +332,7 @@ namespace UnityVolumeRendering
             }
             catch (OutOfMemoryException)
             {
-                texture = new Texture3D(dimX, dimY, dimZ, texformat, false);               
+                texture = new Texture3D(dimX, dimY, dimZ, texformat, false);
                 texture.wrapMode = TextureWrapMode.Clamp;
 
 
@@ -360,7 +362,8 @@ namespace UnityVolumeRendering
             Color[] cols = null;
 
             progressHandler.StartStage(0.2f, "Calculating value bounds");
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 if (minDataValue == float.MaxValue || maxDataValue == float.MinValue)
                     CalculateValueBounds(progressHandler);
                 minValue = GetMinDataValue();
