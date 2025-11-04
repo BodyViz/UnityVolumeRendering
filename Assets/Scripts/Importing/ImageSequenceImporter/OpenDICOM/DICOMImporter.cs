@@ -228,6 +228,12 @@ namespace UnityVolumeRendering
 
             // Convert from LPS to Unity's coordinate system
             ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(dataset);
+
+            // We now need to apply the IOP rotation to the dataset.
+            // The dataset.rotation property is used to rotate the volume mesh in VolumeObjectFactory::CreateObjectInternal
+            // where it rotates the MeshContainer. Applying the IOP rotation to the dataset.rotation property
+            // will apply the rotation to the volume mesh itself and achieve the correct orientation.
+            dataset.rotation = files[0].imageOrientation.Rotation() * dataset.rotation;
         }
 
         private DICOMSliceFile ReadDICOMFile(string filePath)
