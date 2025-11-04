@@ -39,8 +39,6 @@ namespace UnityVolumeRendering
         private Texture3D dataTexture = null;
         private Texture3D gradientTexture = null;
 
-        public ImageOrientationPatient imageOrientation;
-
         private SemaphoreSlim createDataTextureLock = new SemaphoreSlim(1, 1);
         private SemaphoreSlim createGradientTextureLock = new SemaphoreSlim(1, 1);
 

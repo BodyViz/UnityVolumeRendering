@@ -188,10 +188,6 @@ namespace UnityVolumeRendering
             int dimension = dataset.dimX * dataset.dimY * dataset.dimZ;
             dataset.data = new float[dimension];
 
-            // Copy out the Image Orientation Patient orientation information for the volume.
-            // This should really be done for each slice, but we will assume all slices have the same orientation.
-            dataset.imageOrientation = files[0].imageOrientation;
-
             for (int iSlice = 0; iSlice < files.Count; iSlice++)
             {
                 progress.ReportProgress(iSlice, files.Count, $"Importing slice {iSlice} of {files.Count}");
