@@ -28,6 +28,8 @@ namespace UnityVolumeRendering
         [SerializeField]
         public Quaternion rotation;
 
+        public ImageOrientationPatient imageOrientation;
+
         public float volumeScale;
 
         [SerializeField]
@@ -407,7 +409,8 @@ namespace UnityVolumeRendering
             }
 
             progressHandler.StartStage(0.6f, "Creating gradient texture");
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 GradientComputator gradientComputator = GradientComputatorFactory.CreateGradientComputator(this, gradientType);
 
                 for (int z = 0; z < dimZ; z++)
