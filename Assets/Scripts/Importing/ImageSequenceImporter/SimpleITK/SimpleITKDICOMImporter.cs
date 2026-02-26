@@ -150,9 +150,17 @@ namespace UnityVolumeRendering
 			var imageOrientationPatient = GetIOP(dicomNames);
 			volumeDataset.imageOrientation = imageOrientationPatient;
 
-			// Convert to Unity's coordinate system (Right, Superior, Anterior)
-			// "LAS" seems to match the VIPRE orientation of datasets coming out of the IOP adjustment.
-			image = SimpleITK.DICOMOrient(image, "LAS");
+			// Build direction matrix in column-major order (as SimpleITK expects)
+			// np.stack([row, col, normal], axis=1) stacks as columns, then flatten is row-major read of that
+			// Result row-major flat: [row[0], col[0], n[0], row[1], col[1], n[1], row[2], col[2], n[2]]
+			VectorDouble directionMatrix = new VectorDouble(new double[]
+			{
+				imageOrientationPatient.Row()[0],    imageOrientationPatient.Column()[0],    imageOrientationPatient.Normal()[0],
+				imageOrientationPatient.Row()[1],    imageOrientationPatient.Column()[1],    imageOrientationPatient.Normal()[1],
+				imageOrientationPatient.Row()[2],    imageOrientationPatient.Column()[2],    imageOrientationPatient.Normal()[2]
+			});
+
+			image.SetDirection(directionMatrix);
 
 			// Cast to 32-bit float
 			image = SimpleITK.Cast(image, PixelIDValueEnum.sitkFloat32);
