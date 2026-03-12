@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 using openDicom.Registry;
@@ -28,7 +28,7 @@ namespace UnityVolumeRendering
             public float intercept = 0.0f;
             public float slope = 1.0f;
             public float pixelSpacing = 0.0f;
-            public float[] imageOrientation = null;
+            public ImageOrientationPatient imageOrientation;
             public string seriesUID = "";
 
             public string GetFilePath()
@@ -76,7 +76,7 @@ namespace UnityVolumeRendering
 
             LoadSeriesFromResourcesInternal(dataElementDictionary, uidDictionary);
 
-            await Task.Run(()=> LoadSeriesInternal(fileCandidates, seriesByUID, settings.progressHandler));
+            await Task.Run(() => LoadSeriesInternal(fileCandidates, seriesByUID, settings.progressHandler));
 
             Debug.Log($"Loaded {seriesByUID.Count} DICOM series");
 
@@ -167,11 +167,11 @@ namespace UnityVolumeRendering
             VolumeDataset dataset = ScriptableObject.CreateInstance<VolumeDataset>();
 
             bool clampHounsfield = PlayerPrefs.GetInt("ClampHounsfield") > 0;
-            await Task.Run(() => ImportSeriesInternal(files,dataset, settings.progressHandler, clampHounsfield));
+            await Task.Run(() => ImportSeriesInternal(files, dataset, settings.progressHandler, clampHounsfield));
 
             return dataset;
         }
-        private void ImportSeriesInternal(List<DICOMSliceFile> files,VolumeDataset dataset, IProgressHandler progress, bool clampHounsfield)
+        private void ImportSeriesInternal(List<DICOMSliceFile> files, VolumeDataset dataset, IProgressHandler progress, bool clampHounsfield)
         {
             // Calculate slice location from "Image Position" (0020,0032)
             CalculateSliceLocations(files);
@@ -225,9 +225,15 @@ namespace UnityVolumeRendering
             }
 
             dataset.FixDimensions();
-            
+
             // Convert from LPS to Unity's coordinate system
             ImporterUtilsInternal.ConvertLPSToUnityCoordinateSpace(dataset);
+
+            // We now need to apply the IOP rotation to the dataset.
+            // The dataset.rotation property is used to rotate the volume mesh in VolumeObjectFactory::CreateObjectInternal
+            // where it rotates the MeshContainer. Applying the IOP rotation to the dataset.rotation property
+            // will apply the rotation to the volume mesh itself and achieve the correct orientation.
+            dataset.imageOrientation = files[0].imageOrientation;
         }
 
         private DICOMSliceFile ReadDICOMFile(string filePath)
@@ -275,11 +281,11 @@ namespace UnityVolumeRendering
                 if (file.DataSet.Contains(imageOrientationTag))
                 {
                     DataElement elemImageOrientation = file.DataSet[imageOrientationTag];
-                    slice.imageOrientation = new float[6];
-                    for (int i = 0; i < 6; i++)
-                        slice.imageOrientation[i] = (float)Convert.ToDouble(elemImageOrientation.Value[i]);
+                    var firstRow = new Vector3((float)Convert.ToDouble(elemImageOrientation.Value[0]), (float)Convert.ToDouble(elemImageOrientation.Value[1]), (float)Convert.ToDouble(elemImageOrientation.Value[2]));
+                    var firstColumn = new Vector3((float)Convert.ToDouble(elemImageOrientation.Value[3]), (float)Convert.ToDouble(elemImageOrientation.Value[4]), (float)Convert.ToDouble(elemImageOrientation.Value[5]));
+                    slice.imageOrientation = new ImageOrientationPatient(firstRow, firstColumn);
                 }
-                
+
                 // Read intercept
                 if (file.DataSet.Contains(interceptTag))
                 {
@@ -288,7 +294,7 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-                
+
                 // Read slope
                 if (file.DataSet.Contains(slopeTag))
                 {
@@ -297,7 +303,7 @@ namespace UnityVolumeRendering
                 }
                 else
                     Debug.LogWarning($"The file {filePath} is missing the intercept element. As a result, the default transfer function might not look good.");
-                
+
                 // Read pixel spacing
                 if (file.DataSet.Contains(pixelSpacingTag))
                 {
@@ -363,7 +369,7 @@ namespace UnityVolumeRendering
 
                     // Byte array for a single cell/pixel value
                     byte[] cellData = new byte[cellSize];
-                    for(int iByte = 0; iByte < bytes.Length; iByte++)
+                    for (int iByte = 0; iByte < bytes.Length; iByte++)
                     {
                         // Collect bytes for one cell (sample)
                         int index = iByte % cellSize;
@@ -402,20 +408,16 @@ namespace UnityVolumeRendering
             if (slices.Count == 0 || slices[0].imageOrientation == null)
                 return;
 
-            // Get the direction cosines
-            float[] cosines = slices[0].imageOrientation;
             // Construct the basis vectors
-            Vector3 xBase = new Vector3(cosines[0], cosines[1], cosines[2]);
-            Vector3 yBase = new Vector3(cosines[3], cosines[4], cosines[5]);
-            Vector3 normal = Vector3.Cross(xBase, yBase);
+            Vector3 normal = slices[0].imageOrientation.Normal();
 
-            for(int i = 0; i < slices.Count; i++)
+            for (int i = 0; i < slices.Count; i++)
             {
                 Vector3 position = slices[i].position;
                 // Project p onto n. d = dot(p,n) / |n| = dot(p,n)
                 float distance = Vector3.Dot(position, normal);
                 slices[i].location = distance;
             }
-        }  
+        }
     }
 }
