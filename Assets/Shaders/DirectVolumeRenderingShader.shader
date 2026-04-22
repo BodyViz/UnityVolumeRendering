@@ -460,6 +460,7 @@
             // Draws the first point (closest to camera) with a density within the user-defined thresholds.
             frag_out frag_surf(frag_in i)
             {
+                #undef MAX_NUM_STEPS
                 #define MAX_NUM_STEPS 1024
                 const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
