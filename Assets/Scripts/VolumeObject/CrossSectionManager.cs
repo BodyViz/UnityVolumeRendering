@@ -24,7 +24,13 @@ namespace UnityVolumeRendering
     [ExecuteInEditMode]
     public class CrossSectionManager : MonoBehaviour
     {
-        private const int MAX_CROSS_SECTIONS = 8;
+        private const int MAX_CROSS_SECTIONS = 32;
+
+        /// <summary>
+        /// Maximum number of cross sections the renderer can apply at once (matches the shader array size).
+        /// Read-only so callers can validate against it without being able to change it.
+        /// </summary>
+        public static int MaxCrossSections => MAX_CROSS_SECTIONS;
 
         /// <summary>
         /// Volume dataset to cross section.

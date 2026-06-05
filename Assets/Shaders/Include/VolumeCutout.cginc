@@ -4,8 +4,8 @@
 #define CROSS_SECTION_TYPE_SPHERE_INCL 4
 #define CROSS_SECTION_TYPE_SPHERE_EXCL 5
 
-float4x4 _CrossSectionMatrices[8];
-float _CrossSectionTypes[8];
+float4x4 _CrossSectionMatrices[32];
+float _CrossSectionTypes[32];
 int _NumCrossSections;
 
 bool IsCutout(float3 currPos)
